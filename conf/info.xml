@@ -38,9 +38,9 @@
         <name xml:lang="de">DAOL</name>
         <name xml:lang="ru">DAOL</name>
         <name xml:lang="es">DAOL</name>
-		<name xml:lang="tr">DAOL</name>
-		<name xml:lang="vi">DAOL</name>
-		<name xml:lang="mm">DAOL</name>
+        <name xml:lang="tr">DAOL</name>
+        <name xml:lang="vi">DAOL</name>
+        <name xml:lang="mm">DAOL</name>
     </author>
 
     <author email_address="developers@xpressengine.com" link="http://xpressengine.com/">
@@ -53,8 +53,8 @@
         <name xml:lang="de">NAVER</name>
         <name xml:lang="ru">NAVER</name>
         <name xml:lang="es">NAVER</name>
-		<name xml:lang="tr">NAVER</name>
-		<name xml:lang="vi">NAVER</name>
-		<name xml:lang="mm">NAVER</name>
+        <name xml:lang="tr">NAVER</name>
+        <name xml:lang="vi">NAVER</name>
+        <name xml:lang="mm">NAVER</name>
     </author>
 </module>

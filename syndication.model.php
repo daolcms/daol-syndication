@@ -1,5 +1,6 @@
 <?php
 /* Copyright (C) NAVER <http://www.navercorp.com> */
+/* Copyright (C) DAOL Project <http://www.daolcms.org> */
 
 /**
  * @class  getSyndicationList
@@ -7,8 +8,7 @@
  * @brief syndication model class of the module
  **/
 
-class syndicationModel extends syndication
-{
+class syndicationModel extends syndication {
 	private $site_url = null;
 	private $uri_scheme = 'http://';
 	private $syndication_password= null;
@@ -17,7 +17,7 @@ class syndicationModel extends syndication
 	private $granted_modules = array();
 	static private $modules = array();
 
-	function init() {
+	function init(){
 		$oModuleModel = getModel('module');
 		$config = $oModuleModel->getModuleConfig('syndication');
 		if(Context::getSslStatus() == 'always') $this->uri_scheme = 'https://';
@@ -27,8 +27,8 @@ class syndicationModel extends syndication
 		$this->year = $config->year;
 
 		$output = executeQueryArray('syndication.getGrantedModules');
-		if($output->data) {
-			foreach($output->data as $key => $val) {
+		if($output->data){
+			foreach($output->data as $key => $val){
 				$this->granted_modules[] = $val->module_srl;
 			}
 		}
@@ -36,7 +36,7 @@ class syndicationModel extends syndication
 		$this->gzhandler_enable = FALSE;
 	}
 
-	function isExceptedModules($module_srl) {
+	function isExceptedModules($module_srl){
 		$args = new stdClass;
 		$args->module_srl = $module_srl;
 
@@ -49,24 +49,19 @@ class syndicationModel extends syndication
 		return FALSE;
 	}
 
-	function getExceptModuleSrls()
-	{
+	function getExceptModuleSrls(){
 		$output = executeQueryArray('syndication.getExceptModuleSrls');
 		$module_srls = array();
-		if (is_array($output->data))
-		{
-			foreach($output->data as $val)
-			{
+		if(is_array($output->data)){
+			foreach($output->data as $val){
 				$module_srls[] = $val->module_srl;
 			}
 		}
 		return $module_srls;
 	}
 
-	function getLang($key, $site_srl)
-	{
-		if(!$this->langs[$site_srl])
-		{
+	function getLang($key, $site_srl){
+		if(!$this->langs[$site_srl]){
 			$this->langs[$site_srl] = array();
 			$args = new stdClass;
 			$args->site_srl = $site_srl;
@@ -74,37 +69,31 @@ class syndicationModel extends syndication
 			$output = executeQueryArray("syndication.getLang", $args);
 			if(!$output->toBool() || !$output->data) return $key;
 
-			foreach($output->data as $value)
-			{
+			foreach($output->data as $value){
 				$this->langs[$site_srl][$value->name] = $value->value;
 			}
 		}
-		if($this->langs[$site_srl][$key])
-		{
+		if($this->langs[$site_srl][$key]){
 			return $this->langs[$site_srl][$key];
 		}
 		else return $key;
 	}
 
-	function handleLang($title, $site_srl)
-	{
+	function handleLang($title, $site_srl){
 		$matches = NULL;
-		if(!preg_match("/\\\$user_lang->(.+)/", $title, $matches))
-		{
+		if(!preg_match("/\\\$user_lang->(.+)/", $title, $matches)){
 			return $title;
 		}
-		else
-		{
+		else{
 			return $this->getLang($matches[1], $site_srl);
 		}
 	}
 
-	function getSyndicationList() {
+	function getSyndicationList(){
 		$oModuleModel = getModel('module');
 		$config = $oModuleModel->getModuleConfig('syndication');
-		if(!$config->year || !$config->site_url || !$config->syndication_token) 
-		{
-			return new Object(-1,'msg_check_syndication_config');
+		if(!$config->year || !$config->site_url || !$config->syndication_token){
+			return $this->makeObject(-1,'msg_check_syndication_config');
 		}
 
 		$id = Context::get('id');
@@ -114,49 +103,41 @@ class syndicationModel extends syndication
 		$endTime = Context::get('end-time');
 
 		$page = Context::get('page');
-		if(!$page)
-		{
+		if(!$page){
 			$page = 1;
 		}
 		$vars = Context::getRequestVars();
-		if(!$id || !$type)
-		{
-			return new Object(-1,'msg_invalid_request');
+		if(!$id || !$type){
+			return $this->makeObject(-1,'msg_invalid_request');
 		}
 
-		if(!preg_match('/^tag:([^,]+),([0-9]+):(site|channel|article)(.*)$/i',$id,$matches)) 
-		{
-			return new Object(-1,'msg_invalid_request');
+		if(!preg_match('/^tag:([^,]+),([0-9]+):(site|channel|article)(.*)$/i',$id,$matches)){
+			return $this->makeObject(-1,'msg_invalid_request');
 		}
 
-		if($config->syndication_password != Context::get('syndication_password'))
-		{
-			return new Object(-1,'msg_invalid_request');
+		if($config->syndication_password != Context::get('syndication_password')){
+			return $this->makeObject(-1,'msg_invalid_request');
 		}
 
 		$url = $matches[1];
 		$year = $matches[2];
 		$target = $matches[3];
 		$id = $matches[4];
-		if($id && $id{0}==':')
-		{
+		if($id && $id{0}==':'){
 			$id = substr($id, 1);
 		}
 
 		$module_srl = null;
 		$document_srl = null;
-		if($id && strpos($id,'-')!==false) 
-		{
+		if($id && strpos($id,'-')!==false){
 			list($module_srl, $document_srl) = explode('-', $id);
 		}
-		elseif($id) 
-		{
+		elseif($id){
 			$module_srl = $id;
 		}
 
-		if(!$url || !$year || !$target)
-		{
-			return new Object(-1,'msg_invalid_request');
+		if(!$url || !$year || !$target){
+			return $this->makeObject(-1,'msg_invalid_request');
 		}
 
 		$time_zone = substr($GLOBALS['_time_zone'], 0, 3).':'.substr($GLOBALS['_time_zone'], 3);
@@ -164,13 +145,11 @@ class syndicationModel extends syndication
 
 		$site_module_info = Context::get('site_module_info');
 
-		if($target == 'channel' && !$module_srl)
-		{
+		if($target == 'channel' && !$module_srl){
 			$target = 'site';
 		}
 
-		if($module_srl)
-		{
+		if($module_srl){
 			$args = new stdClass;
 			$args->module_srls = $module_srl;
 			$output = executeQuery('syndication.getModules', $args);
@@ -178,27 +157,22 @@ class syndicationModel extends syndication
 			self::$modules[$module_srl] = $output->data;
 		}
 
-		if($target == 'channel' && $module_srl)
-		{
-			if($module_info) 
-			{
+		if($target == 'channel' && $module_srl){
+			if($module_info){
 				$args->module_srl = $module_srl;
 				$output = executeQuery('syndication.getExceptModules', $args);
-				if($output->data->count) 
-				{
+				if($output->data->count){
 					$error = 'target is not founded';
 				}
 			} 
-			else 
-			{
+			else{
 				$error = 'target is not founded';
 			}
 
 			unset($args);
 		}
 
-		if(!$error) 
-		{
+		if(!$error){
 			Context::set('target', $target);
 			Context::set('type', $type);
 
@@ -208,8 +182,7 @@ class syndicationModel extends syndication
 			$oModuleModel = getModel('module');
 			$site_config = $oModuleModel->getModuleConfig('module');
 
-			switch($target) 
-			{
+			switch($target){
 				case 'site' :
 						$site_info = new stdClass;
 						$site_info->id = $this->getID('site');
@@ -217,23 +190,18 @@ class syndicationModel extends syndication
 						$site_info->site_title = $this->handleLang($site_module_info->browser_title, $site_module_info->site_srl);
 						$site_info->title = $site_info->site_title;
 
-						if($module_srl)
-						{
+						if($module_srl){
 							$args->module_srl = $module_srl;
 							$site_info->title = $this->handleLang($module_info->browser_title, $module_info->site_srl);
-							if(!$site_info->title)
-							{
+							if(!$site_info->title){
 								$site_info->title = $site_info->site_title;
 							}
 						}
-						else
-						{
+						else{
 							$except_module_output = executeQueryArray('syndication.getExceptModuleSrls');
-							if(is_array($except_module_output->data))
-							{
+							if(is_array($except_module_output->data)){
 								$except_module_srls = array();
-								foreach($except_module_output->data as $val)
-								{
+								foreach($except_module_output->data as $val){
 									$except_module_srls[] = $val->module_srl;
 								}
 								$args->except_modules = implode(',', $except_module_srls);
@@ -242,8 +210,7 @@ class syndicationModel extends syndication
 
 						$output = executeQuery('syndication.getSiteUpdatedTime', $args);
 
-						if($output->data)
-						{
+						if($output->data){
 							$site_info->updated = date("Y-m-d\\TH:i:s", ztime($output->data->last_update)).$time_zone;
 						}
 
@@ -251,12 +218,12 @@ class syndicationModel extends syndication
 						Context::set('site_info', $site_info);
 
 						$this->setTemplateFile('site');
-						switch($type) {
+						switch($type){
 							case 'article' :
 								// 문서 전체를 신디케이션에 추가
 								Context::set('articles', $this->getArticles($module_srl, $page, $startTime, $endTime, 'article',$site_info->id));
 								$next_url = Context::get('articles')->next_url;
-								
+
 								break;
 							case 'deleted' :
 								// 문서 전체를 신디케이션에서 삭제
@@ -269,8 +236,7 @@ class syndicationModel extends syndication
 						}
 
 						// 다음 페이지가 있다면 다시 신디케이션 호출
-						if($next_url)
-						{
+						if($next_url){
 							$oSyndicationController = getController('syndication');
 							$oSyndicationController->ping(Context::get('id'), Context::get('type'), ++$page);
 						}
@@ -285,18 +251,15 @@ class syndicationModel extends syndication
 						$channel_info->site_url = getFullSiteUrl($this->uri_scheme . $this->site_url, '');
 						$channel_info->alternative_href = $this->getChannelAlternativeHref($module_info->module_srl);
 						$channel_info->summary = $module_info->description;
-						if($module_info->module == "textyle")
-						{
+						if($module_info->module == "textyle"){
 							$channel_info->type = "blog";
 							$channel_info->rss_href = getFullSiteUrl($module_info->domain, '', 'mid', $module_info->mid, 'act', 'rss');
 						}
-						else
-						{
+						else{
 							$channel_info->type = "web";
 						}
 						$except_module_srls = $this->getExceptModuleSrls();
-						if($except_module_srls)
-						{
+						if($except_module_srls){
 							$args->except_modules = implode(',',$except_module_srls);
 						}
 
@@ -305,7 +268,7 @@ class syndicationModel extends syndication
 						Context::set('channel_info', $channel_info);
 
 						$this->setTemplateFile('channel');
-						switch($type) {
+						switch($type){
 							case 'article' :
 									Context::set('articles', $this->getArticles($module_srl, $page, $startTime, $endTime, 'article', $channel_info->id));
 								break;
@@ -323,7 +286,7 @@ class syndicationModel extends syndication
 						$channel_info->id = $this->getID('channel', $module_info->module_srl);
 						$channel_info->title = $this->handleLang($module_info->browser_title, $module_info->site_srl);
 						$channel_info->site_title = $site_config->siteTitle;
-						if(!$channel_info->site_title) {
+						if(!$channel_info->site_title){
 							$channel_info->site_title = $channel_info->title;
 						}
 						$channel_info->updated = date("Y-m-d\\TH:i:s").$time_zone;
@@ -334,8 +297,7 @@ class syndicationModel extends syndication
 						$channel_info->webmaster_email = $member_config->webmaster_email;
 
 						$except_module_srls = $this->getExceptModuleSrls();
-						if($except_module_srls)
-						{
+						if($except_module_srls){
 							$args->except_modules = implode(',',$except_module_srls);
 						}
 
@@ -345,7 +307,7 @@ class syndicationModel extends syndication
 						Context::set('member_config', $member_config);
 
 						$this->setTemplateFile('channel');
-						switch($type) {
+						switch($type){
 							case "article" :
 								$articles = new stdClass; 
 								$articles->list = array($this->getArticle($document_srl));
@@ -360,7 +322,8 @@ class syndicationModel extends syndication
 						}
 					break;
 			}
-		} else {
+		}
+		else{
 			Context::set('message', $error);
 			$this->setTemplateFile('error');
 		}
@@ -370,7 +333,7 @@ class syndicationModel extends syndication
 	}
 
 	// @DEPRECATED
-	function getChannels() {
+	function getChannels(){
 		if($module_srls) $args->module_srls = $module_srls;
 		if(count($this->granted_modules)) $args->except_module_srls = implode(',',$this->granted_modules);
 		$output = executeQueryArray('syndication.getModules', $args);
@@ -378,8 +341,8 @@ class syndicationModel extends syndication
 		$time_zone = substr($GLOBALS['_time_zone'],0,3).':'.substr($GLOBALS['_time_zone'],3);
 		Context::set('time_zone', $time_zone);
 
-		if($output->data) {
-			foreach($output->data as $module_info) {
+		if($output->data){
+			foreach($output->data as $module_info){
 				unset($obj);
 				$obj = new stdClass;
 				$obj->id = $this->getID('channel', $module_info->module_srl);
@@ -388,13 +351,11 @@ class syndicationModel extends syndication
 				$obj->self_href = $this->getSelfHref($obj->id, 'channel');
 				$obj->alternative_href = $this->getChannelAlternativeHref($module_info);
 				$obj->summary = $module_info->description;
-				if($module_info->module == "textyle")
-				{
+				if($module_info->module == "textyle"){
 					$obj->type = "blog";
 					$obj->rss_href = getFullSiteUrl($module_info->domain, '', 'mid', $module_info->mid, 'act', 'rss');
 				}
-				else
-				{
+				else{
 					$obj->type = "web";
 				}
 
@@ -404,7 +365,7 @@ class syndicationModel extends syndication
 		return $list;
 	}
 
-	function getArticle($document_srl) {
+	function getArticle($document_srl){
 		if($this->site_url==null) $this->init();
 
 		$oDocumentModel = getModel('document');
@@ -427,7 +388,7 @@ class syndicationModel extends syndication
 		$article->nick_name = (!$oDocument->get('nick_name')) ? $oDocument->get('user_name') : $oDocument->get('nick_name');
 		$article->title = $oDocument->getTitle();
 		$article->content = $oDocument->get('content');
-		if($val->category_srl) {
+		if($val->category_srl){
 			$category = $oDocumentModel->getCategory($val->category_srl);
 			$category_title = $category->title;
 			$article->category = new stdClass();
@@ -438,7 +399,7 @@ class syndicationModel extends syndication
 		return $article;
 	}
 
-	function getArticles($module_srl = null, $page=1, $startTime = null, $endTime = null, $type = null, $id = null) {
+	function getArticles($module_srl = null, $page=1, $startTime = null, $endTime = null, $type = null, $id = null){
 		if($this->site_url==null) $this->init();
 
 		$args = new stdClass;
@@ -458,15 +419,15 @@ class syndicationModel extends syndication
 		$time_zone = substr($GLOBALS['_time_zone'],0,3).':'.substr($GLOBALS['_time_zone'],3);
 		Context::set('time_zone', $time_zone);
 
-		if($cur_page<$total_page) {
+		if($cur_page<$total_page){
 			$next_url = $this->getSelfHref($id, $type);
 			if($startTime) $next_url .= '&startTime='.$startTime;
 			if($endTime) $next_url .= '&endTime='.$endTime;
 			$result->next_url = $next_url.'&page='.($cur_page+1);
 		}
 
-		if($output->data) {
-			foreach($output->data as $key => $val) {
+		if($output->data){
+			foreach($output->data as $key => $val){
 				$article = new stdClass();
 				$article->id = $this->getID('article', $val->module_srl.'-'.$val->document_srl);
 				$article->updated = date("Y-m-d\\TH:i:s", ztime($val->last_update)).$time_zone;
@@ -481,7 +442,7 @@ class syndicationModel extends syndication
 		return $result;
 	}
 
-	function getDeleted($module_srl = null, $page = 1, $startTime = null, $endTime = null, $type = null, $id = null) {
+	function getDeleted($module_srl = null, $page = 1, $startTime = null, $endTime = null, $type = null, $id = null){
 		if($this->site_url==null) $this->init();
 
 		$args = new stdClass;
@@ -502,15 +463,15 @@ class syndicationModel extends syndication
 		$time_zone = substr($GLOBALS['_time_zone'],0,3).':'.substr($GLOBALS['_time_zone'],3);
 		Context::set('time_zone', $time_zone);
 
-		if($cur_page<$total_page) {
+		if($cur_page<$total_page){
 			$next_url = $this->getSelfHref($id, $type);
 			if($startTime) $next_url .= '&startTime='.$startTime;
 			if($endTime) $next_url .= '&endTime='.$endTime;
 			$result->next_url = $next_url . '&page='.($cur_page+1);
 		}
 
-		if($output->data) {
-			foreach($output->data as $key => $val) {
+		if($output->data){
+			foreach($output->data as $key => $val){
 				$val->id = $this->getID('article', $val->module_srl.'-'.$val->document_srl);
 				$val->deleted = date("Y-m-d\\TH:i:s", ztime($val->regdate)).$time_zone;
 				$val->alternative_href = getFullSiteUrl($this->uri_scheme . $this->site_url, '', 'document_srl', $val->document_srl);
@@ -522,15 +483,30 @@ class syndicationModel extends syndication
 		return $result;
 	}
 
-	function getDeletedByDocumentSrl($document_srl)
-	{
+	function getDeletedByDocumentSrl($document_srl){
+		static $module_info = array();
+
 		$args = new stdClass;
 		$args->document_srl = $document_srl;
 		$output = executeQueryArray('syndication.getDeletedList', $args);
-		foreach($output->data as $key => $val) {
+
+		$time_zone = substr($GLOBALS['_time_zone'],0,3).':'.substr($GLOBALS['_time_zone'],3);
+		Context::set('time_zone', $time_zone);
+
+		foreach($output->data as $key => $val){
+			$module_srl = $val->module_srl;
+
+			if(!isset($module_info[$module_srl])){
+				$args = new stdClass;
+				$args->module_srl = $module_srl;
+				$module_output = executeQuery('syndication.getModuleSiteInfo', $args);
+				if($module_output->data) $module_info[$module_srl] = $module_output->data;
+				else $module_info[$module_srl] = null;
+			}
+
 			$val->id = $this->getID('article', $val->module_srl.'-'.$val->document_srl);
 			$val->deleted = date("Y-m-d\\TH:i:s", ztime($val->regdate)).$time_zone;
-			$val->alternative_href = getFullSiteUrl($this->uri_scheme . $this->site_url, '', 'document_srl', $val->document_srl);
+			$val->alternative_href = getFullSiteUrl($this->uri_scheme . $this->site_url, '', 'mid', $module_info[$module_srl]->mid, 'document_srl', $val->document_srl);
 			$val->channel_id = $this->getID('channel', $val->module_srl.'-'.$val->document_srl);
 			$output->data[$key] = $val;
 		}
@@ -538,15 +514,15 @@ class syndicationModel extends syndication
 		return $output->data;
 	}
 
-	function getID($type, $target_id = null) {
+	function getID($type, $target_id = null){
 		if($this->site_url==null) $this->init();
 
 		return sprintf('tag:%s,%d:%s', $this->site_url, $this->year, $type) . ($target_id?':'.$target_id:'');
 	}
 
-	function getChannelAlternativeHref($module_srl) {
+	function getChannelAlternativeHref($module_srl){
 		static $module_info = array();
-		if(!isset($module_info[$module_srl])) {
+		if(!isset($module_info[$module_srl])){
 			$args = new stdClass;
 			$args->module_srl = $module_srl;
 			$output = executeQuery('syndication.getModuleSiteInfo', $args);
@@ -562,7 +538,7 @@ class syndicationModel extends syndication
 		return $url;
 	}
 
-	function getSelfHref($id, $type = null) {
+	function getSelfHref($id, $type = null){
 		if($this->site_url==null) $this->init();
 
 		return  sprintf('%s/?module=syndication&act=getSyndicationList&id=%s&type=%s&syndication_password=%s', $this->uri_scheme . $this->site_url, $id, $type, $this->syndication_password);
@@ -571,16 +547,17 @@ class syndicationModel extends syndication
 	/**
 	 * 문서의 고유 URL 반환
 	 */
-	function getAlternativeHref($document_srl, $module_srl) {
+	function getAlternativeHref($document_srl, $module_srl){
 		if($this->site_url==null) $this->init();
 
-		if(!self::$modules[$module_srl]) {
+		if(!self::$modules[$module_srl]){
 			$args = new stdClass;
 			$args->module_srls = $module_srl;
 			$output = executeQuery('syndication.getModules', $args);
 			$module_info = $output->data;
 			self::$modules[$module_srl] = $module_info;
-		} else {
+		}
+		else{
 			$module_info = self::$modules[$module_srl];
 		}
 
@@ -590,24 +567,21 @@ class syndicationModel extends syndication
 		return $url;
 	}
 
-	function getDate($date) {
+	function getDate($date){
 		$time = strtotime($date);
 		if($time == -1) $time = ztime(str_replace(array('-','T',':'),'',$date));
 		return date('YmdHis', $time);
 	}
 
-	function getResentPingLogPath()
-	{
-		$target_filename = _XE_PATH_.'files/cache/tmp/syndication_ping_log';
-		if(!file_exists($target_filename))
-		{
+	function getResentPingLogPath(){
+		$target_filename = _DAOL_PATH_.'files/cache/tmp/syndication_ping_log';
+		if(!file_exists($target_filename)){
 			FileHandler::writeFile($target_filename, '');
 		}
 		return $target_filename;
 	}
 
-	function setResentPingLog($msg)
-	{
+	function setResentPingLog($msg){
 		$file_path = $this->getResentPingLogPath();
 
 		$args = new stdClass;
@@ -615,8 +589,7 @@ class syndicationModel extends syndication
 		$args->message = urlencode($msg);
 
 		$list = $this->getResentPingLog();
-		if(count($list)>=10)
-		{
+		if(count($list)>=10){
 			array_pop($list);
 		}
 		array_unshift($list, $args);
@@ -625,13 +598,11 @@ class syndicationModel extends syndication
 		return true;
 	}
 
-	function getResentPingLog()
-	{
+	function getResentPingLog(){
 		$file_path = $this->getResentPingLogPath();
 		$str = FileHandler::readFile($file_path);
 		$list = array();
-		if($str)
-		{
+		if($str){
 			$list = unserialize($str);
 		}
 

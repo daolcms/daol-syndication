@@ -1,19 +1,18 @@
 <?php
 /* Copyright (C) NAVER <http://www.navercorp.com> */
+/* Copyright (C) DAOL Project <http://www.daolcms.org> */
 
 /**
  * @class  syndicationAdminView
  * @author NAVER (developers@xpressengine.com)
  * @brief  syndication admin view class
  **/
-class syndicationAdminView extends syndication
-{
-	function init() 
-	{
+class syndicationAdminView extends syndication {
+
+	function init(){
 	}
 
-	public function dispSyndicationAdminConfig()
-	{
+	public function dispSyndicationAdminConfig(){
 		$oModuleModel = getModel('module');
 
 		$module_config = $oModuleModel->getModuleConfig('syndication');
@@ -21,23 +20,19 @@ class syndicationAdminView extends syndication
 		$oSyndicationModel = getModel('syndication');
 		Context::set('ping_log', $oSyndicationModel->getResentPingLog());
 
-		if(!$module_config->syndication_use)
-		{
+		if(!$module_config->syndication_use){
 			$module_config->syndication_use = 'Y';
 		}
 
-		if(!$module_config->site_url)
-		{
+		if(!$module_config->site_url){
 			$module_config->site_url = Context::getDefaultUrl()?Context::getDefaultUrl():getFullUrl();
 		}
 
-		if(!$module_config->year)
-		{
+		if(!$module_config->year){
 			$module_config->year = date("Y");
 		}
 
-		if(!isset($module_config->syndication_password))
-		{
+		if(!isset($module_config->syndication_password)){
 			$module_config->syndication_password = uniqid();
 		}
 
@@ -50,15 +45,13 @@ class syndicationAdminView extends syndication
 
 		$output = executeQueryArray('syndication.getExceptModules');
 		$except_module_list = array();
-		if($output->data && count($output->data) > 0)
-		{
-			foreach($output->data as $item)
-			{
+		if($output->data && count($output->data) > 0){
+			foreach($output->data as $item){
 				$except_module_list[] = $item;
 			}
 		}
 		Context::set('except_module', $except_module_list);
-		
+
 
 		//Security
 		$security = new Security();
@@ -68,5 +61,4 @@ class syndicationAdminView extends syndication
 		$this->setTemplatePath($this->module_path.'tpl');
 		$this->setTemplateFile('config');
 	}
-
 }

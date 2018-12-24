@@ -1,5 +1,6 @@
 <?php
 /* Copyright (C) NAVER <http://www.navercorp.com> */
+/* Copyright (C) DAOL Project <http://www.daolcms.org> */
 
 /**
  * @class  syndication
@@ -26,7 +27,7 @@ class syndication extends ModuleObject {
 		'Naver' => 'http://syndication.openapi.naver.com/status/?site=%s',
 	);
 
-	function moduleInstall() {
+	function moduleInstall(){
 		$oModuleController = getController('module');
 		$oModuleController->insertTrigger('document.insertDocument', 'syndication', 'controller', 'triggerInsertDocument', 'after');
 		$oModuleController->insertTrigger('document.updateDocument', 'syndication', 'controller', 'triggerUpdateDocument', 'after');
@@ -34,7 +35,7 @@ class syndication extends ModuleObject {
 		$oModuleController->insertTrigger('module.deleteModule', 'syndication', 'controller', 'triggerDeleteModule', 'after');
 
 		$oModuleController->insertTrigger('document.moveDocumentToTrash', 'syndication', 'controller', 'triggerMoveDocumentToTrash', 'after');
-		$oModuleController->insertTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after');
+		// $oModuleController->insertTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after');
 		$oModuleController->insertTrigger('document.moveDocumentModule', 'syndication', 'controller', 'triggerMoveDocumentModule', 'after');
 
 		$oAddonAdminModel = getAdminModel('addon');
@@ -45,25 +46,25 @@ class syndication extends ModuleObject {
 		}
 	}
 
-	function checkUpdate() {
+	function checkUpdate(){
 		$oModuleModel = getModel('module');
 		if(!$oModuleModel->getTrigger('document.moveDocumentToTrash', 'syndication', 'controller', 'triggerMoveDocumentToTrash', 'after')) return true;
-		if(!$oModuleModel->getTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after')) return true;
+		// if(!$oModuleModel->getTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after')) return true;
 		if(!$oModuleModel->getTrigger('document.moveDocumentModule', 'syndication', 'controller', 'triggerMoveDocumentModule', 'after')) return true;
 
 		return false;
 	}
 
-	function moduleUpdate() {
+	function moduleUpdate(){
 		$oModuleModel = getModel('module');
 		$oModuleController = getController('module');
 
 		if(!$oModuleModel->getTrigger('document.moveDocumentToTrash', 'syndication', 'controller', 'triggerMoveDocumentToTrash', 'after')){
 			$oModuleController->insertTrigger('document.moveDocumentToTrash', 'syndication', 'controller', 'triggerMoveDocumentToTrash', 'after');
 		}
-		if(!$oModuleModel->getTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after')){
-			$oModuleController->insertTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after');
-		}
+		// if(!$oModuleModel->getTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after')){
+		// 	$oModuleController->insertTrigger('document.restoreTrash', 'syndication', 'controller', 'triggerRestoreTrash', 'after');
+		// }
 		if(!$oModuleModel->getTrigger('document.moveDocumentModule', 'syndication', 'controller', 'triggerMoveDocumentModule', 'after')){
 			$oModuleController->insertTrigger('document.moveDocumentModule', 'syndication', 'controller', 'triggerMoveDocumentModule', 'after');
 		}
@@ -76,14 +77,17 @@ class syndication extends ModuleObject {
 		}
 	}
 
-	function recompileCache() {
+	function recompileCache(){
 	}
 
-	function checkOpenSSLSupport()
-	{
-		if(!in_array('ssl', stream_get_transports())) {
+	function checkOpenSSLSupport(){
+		if(!in_array('ssl', stream_get_transports())){
 			return FALSE;
 		}
 		return TRUE;
+	}
+
+	public function makeObject($code = 0, $message = 'success'){
+		return class_exists('BaseObject') ? new BaseObject($code, $message) : new Object($code, $message);
 	}
 }
